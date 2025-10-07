@@ -1,0 +1,51 @@
+package com.dapascript.movieleak.data.repository
+
+import com.dapascript.movieleak.data.api.ApiService
+import com.dapascript.movieleak.data.mapper.toMovieDetail
+import com.dapascript.movieleak.data.mapper.toMovieList
+import com.dapascript.movieleak.domain.model.Movie
+import com.dapascript.movieleak.domain.model.MovieDetail
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import javax.inject.Inject
+
+class MovieRepositoryImpl @Inject constructor(
+    private val apiService: ApiService
+) : MovieRepository {
+
+    override suspend fun searchMovie(query: String): Flow<Result<List<Movie>>> {
+        return flow {
+            try {
+                val response = apiService.searchMovie(query)
+                val movies = response.results.toMovieList()
+                emit(Result.success(movies))
+            } catch (e: Exception) {
+                emit(Result.failure(e))
+            }
+        }
+    }
+
+    override suspend fun getMovieDetail(movieId: Int): Flow<Result<MovieDetail>> {
+        return flow {
+            try {
+                val response = apiService.getMovieDetail(movieId)
+                val movieDetail = response.toMovieDetail()
+                emit(Result.success(movieDetail))
+            } catch (e: Exception) {
+                emit(Result.failure(e))
+            }
+        }
+    }
+
+    override suspend fun getPopularMovies(): Flow<Result<List<Movie>>> {
+        return flow {
+            try {
+                val response = apiService.getPopularMovies()
+                val movies = response.results.toMovieList()
+                emit(Result.success(movies))
+            } catch (e: Exception) {
+                emit(Result.failure(e))
+            }
+        }
+    }
+}

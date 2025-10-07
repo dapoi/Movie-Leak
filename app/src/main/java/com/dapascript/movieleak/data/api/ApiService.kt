@@ -1,0 +1,23 @@
+package com.dapascript.movieleak.data.api
+
+import com.dapascript.movieleak.data.model.MovieDetailResponse
+import com.dapascript.movieleak.data.model.MovieResponse
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
+
+interface ApiService {
+
+    @GET("movie/popular")
+    suspend fun getPopularMovies(): MovieResponse
+
+    @GET("search/movie")
+    suspend fun searchMovie(
+        @Query("query") query: String,
+    ): MovieResponse
+
+    @GET("movie/{movie_id}")
+    suspend fun getMovieDetail(
+        @Path("movie_id") movieId: Int,
+    ): MovieDetailResponse
+}

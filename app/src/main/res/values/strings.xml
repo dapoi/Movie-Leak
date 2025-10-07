@@ -9,4 +9,5 @@
     <string name="search_movies">Search movies</string>
     <string name="something_went_wrong">Something went wrong</string>
     <string name="no_movies_found">No movies found</string>
+    <string name="runtime_minutes">%s minutes</string>
 </resources>
