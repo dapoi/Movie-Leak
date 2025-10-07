@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Movie Leak</string>
+    <string name="action">Action</string>
+    <string name="science_fiction">Science Fiction</string>
+    <string name="synopsis">Synopsis</string>
+    <string name="actors">Actors</string>
+    <string name="movie_poster">Movie Poster</string>
+    <string name="watch_trailer">Watch Trailer</string>
+    <string name="search_movies">Search movies</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="no_movies_found">No movies found</string>
 </resources>
