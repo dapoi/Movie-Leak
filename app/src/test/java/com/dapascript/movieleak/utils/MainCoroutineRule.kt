@@ -21,4 +21,3 @@ class MainCoroutineRule(
         Dispatchers.resetMain()
     }
 }
-
