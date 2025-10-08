@@ -1,5 +1,6 @@
 package com.dapascript.movieleak.data.api
 
+import com.dapascript.movieleak.data.model.MovieCreditsResponse
 import com.dapascript.movieleak.data.model.MovieDetailResponse
 import com.dapascript.movieleak.data.model.MovieResponse
 import retrofit2.http.GET
@@ -20,4 +21,9 @@ interface ApiService {
     suspend fun getMovieDetail(
         @Path("movie_id") movieId: Int,
     ): MovieDetailResponse
+
+    @GET("movie/{movie_id}/credits")
+    suspend fun getMovieCredits(
+        @Path("movie_id") movieId: Int,
+    ): MovieCreditsResponse
 }
