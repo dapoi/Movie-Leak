@@ -126,11 +126,6 @@ This app uses [The Movie Database (TMDb) API](https://www.themoviedb.org/documen
 - **Movie Details**: `/movie/{movie_id}`
 - **Movie Credits**: `/movie/{movie_id}/credits`
 
-## 📱 Screenshots
-
-<!-- Add screenshots of your app here -->
-*Screenshots coming soon...*
-
 ## 📧 Contact
 
 **Developer**: dapascript  
