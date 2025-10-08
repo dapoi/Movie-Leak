@@ -125,6 +125,7 @@ This app uses [The Movie Database (TMDb) API](https://www.themoviedb.org/documen
 - **Search Movies**: `/search/movie`
 - **Movie Details**: `/movie/{movie_id}`
 - **Movie Credits**: `/movie/{movie_id}/credits`
+- **Movie Videos**: `/movie/{movie_id}/videos`
 
 ## 📧 Contact
 
