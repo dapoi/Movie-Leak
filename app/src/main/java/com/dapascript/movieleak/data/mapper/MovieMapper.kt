@@ -3,11 +3,15 @@ package com.dapascript.movieleak.data.mapper
 import com.dapascript.movieleak.data.model.CastItem
 import com.dapascript.movieleak.data.model.MovieCreditsResponse
 import com.dapascript.movieleak.data.model.MovieDetailResponse
+import com.dapascript.movieleak.data.model.MovieVideosResponse
 import com.dapascript.movieleak.data.model.ResultsItem
+import com.dapascript.movieleak.data.model.VideoResponse
 import com.dapascript.movieleak.domain.model.Cast
 import com.dapascript.movieleak.domain.model.Movie
 import com.dapascript.movieleak.domain.model.MovieCredits
 import com.dapascript.movieleak.domain.model.MovieDetail
+import com.dapascript.movieleak.domain.model.MovieVideos
+import com.dapascript.movieleak.domain.model.Video
 
 fun ResultsItem.toMovie(): Movie {
     return Movie(
@@ -50,5 +54,23 @@ fun MovieCreditsResponse.toMovieCredits(): MovieCredits {
     return MovieCredits(
         id = this.id,
         cast = this.cast.map { it.toCast() }
+    )
+}
+
+fun VideoResponse.toVideo(): Video {
+    return Video(
+        id = this.id ?: "",
+        key = this.key ?: "",
+        name = this.name ?: "",
+        site = this.site ?: "",
+        type = this.type ?: "",
+        official = this.official ?: false
+    )
+}
+
+fun MovieVideosResponse.toMovieVideos(): MovieVideos {
+    return MovieVideos(
+        id = this.id ?: 0,
+        results = this.results?.map { it.toVideo() } ?: emptyList()
     )
 }

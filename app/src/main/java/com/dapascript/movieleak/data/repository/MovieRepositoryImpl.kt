@@ -4,9 +4,11 @@ import com.dapascript.movieleak.data.api.ApiService
 import com.dapascript.movieleak.data.mapper.toMovieCredits
 import com.dapascript.movieleak.data.mapper.toMovieDetail
 import com.dapascript.movieleak.data.mapper.toMovieList
+import com.dapascript.movieleak.data.mapper.toMovieVideos
 import com.dapascript.movieleak.domain.model.Movie
 import com.dapascript.movieleak.domain.model.MovieCredits
 import com.dapascript.movieleak.domain.model.MovieDetail
+import com.dapascript.movieleak.domain.model.MovieVideos
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -51,6 +53,16 @@ class MovieRepositoryImpl @Inject constructor(
             val response = apiService.getMovieCredits(movieId)
             val movieCredits = response.toMovieCredits()
             emit(Result.success(movieCredits))
+        }.catch { e ->
+            emit(Result.failure(e))
+        }
+    }
+
+    override suspend fun getMovieVideos(movieId: Int): Flow<Result<MovieVideos>> {
+        return flow {
+            val response = apiService.getMovieVideos(movieId)
+            val movieVideos = response.toMovieVideos()
+            emit(Result.success(movieVideos))
         }.catch { e ->
             emit(Result.failure(e))
         }

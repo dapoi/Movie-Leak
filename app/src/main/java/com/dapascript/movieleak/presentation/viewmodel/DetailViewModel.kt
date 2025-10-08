@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dapascript.movieleak.domain.model.MovieCredits
 import com.dapascript.movieleak.domain.model.MovieDetail
+import com.dapascript.movieleak.domain.model.MovieVideos
 import com.dapascript.movieleak.domain.usecase.GetMovieCreditsUseCase
 import com.dapascript.movieleak.domain.usecase.GetMovieDetailUseCase
+import com.dapascript.movieleak.domain.usecase.GetMovieVideosUseCase
 import com.dapascript.movieleak.presentation.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     private val getMovieDetailUseCase: GetMovieDetailUseCase,
-    private val getMovieCreditsUseCase: GetMovieCreditsUseCase
+    private val getMovieCreditsUseCase: GetMovieCreditsUseCase,
+    private val getMovieVideosUseCase: GetMovieVideosUseCase
 ) : ViewModel() {
 
     private val _detailState = MutableStateFlow<UiState<MovieDetail>>(UiState.Loading)
@@ -25,6 +28,9 @@ class DetailViewModel @Inject constructor(
 
     private val _creditsState = MutableStateFlow<UiState<MovieCredits>>(UiState.Loading)
     val creditsState: StateFlow<UiState<MovieCredits>> = _creditsState
+
+    private val _videosState = MutableStateFlow<UiState<MovieVideos>>(UiState.Loading)
+    val videosState: StateFlow<UiState<MovieVideos>> = _videosState
 
     fun getMovieDetail(movieId: Int) {
         viewModelScope.launch {
@@ -49,6 +55,20 @@ class DetailViewModel @Inject constructor(
                     _creditsState.value = UiState.Success(movieCredits)
                 }.onFailure { throwable ->
                     _creditsState.value = UiState.Error(throwable.message.toString())
+                }
+            }
+        }
+    }
+
+    fun getMovieVideos(movieId: Int) {
+        viewModelScope.launch {
+            getMovieVideosUseCase(movieId).catch {
+                _videosState.value = UiState.Error(it.message.toString())
+            }.collect {
+                it.onSuccess { movieVideos ->
+                    _videosState.value = UiState.Success(movieVideos)
+                }.onFailure { throwable ->
+                    _videosState.value = UiState.Error(throwable.message.toString())
                 }
             }
         }

@@ -1,10 +1,12 @@
 package com.dapascript.movieleak.presentation.ui
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -18,10 +20,12 @@ import com.dapascript.movieleak.R
 import com.dapascript.movieleak.databinding.FragmentDetailBinding
 import com.dapascript.movieleak.domain.model.MovieCredits
 import com.dapascript.movieleak.domain.model.MovieDetail
+import com.dapascript.movieleak.domain.model.MovieVideos
 import com.dapascript.movieleak.presentation.adapter.CastAdapter
 import com.dapascript.movieleak.presentation.utils.UiState
 import com.dapascript.movieleak.presentation.viewmodel.DetailViewModel
 import com.google.android.material.chip.Chip
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -35,6 +39,7 @@ class DetailFragment : Fragment() {
     private val args: DetailFragmentArgs by navArgs()
 
     private lateinit var castAdapter: CastAdapter
+    private var currentMovieVideos: MovieVideos? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,6 +58,7 @@ class DetailFragment : Fragment() {
 
         viewModel.getMovieDetail(args.movieId)
         viewModel.getMovieCredits(args.movieId)
+        viewModel.getMovieVideos(args.movieId)
     }
 
     private fun initView() {
@@ -83,7 +89,7 @@ class DetailFragment : Fragment() {
 
                     is UiState.Error -> {
                         binding.progressBar.isVisible = false
-                        binding.root.isVisible = false
+                        // Handle error
                     }
                 }
             }
@@ -92,22 +98,40 @@ class DetailFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.creditsState.collect {
                 when (it) {
-                    is UiState.Loading -> {
-                        // Credits loading state
-                    }
-
+                    is UiState.Loading -> {}
                     is UiState.Success -> {
                         initCastView(it.data)
                     }
-
                     is UiState.Error -> {
-                        // Handle credits error - hide cast section
-                        binding.tvActorsLabel.isVisible = false
-                        binding.rvActors.isVisible = false
+                        // Handle error
                     }
                 }
             }
         }
+
+        lifecycleScope.launch {
+            viewModel.videosState.collect {
+                when (it) {
+                    is UiState.Loading -> {}
+                    is UiState.Success -> {
+                        currentMovieVideos = it.data
+                        updateTrailerButton(it.data)
+                    }
+                    is UiState.Error -> {
+                        binding.btnWatchTrailer.isVisible = false
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateTrailerButton(movieVideos: MovieVideos) {
+        val trailer = movieVideos.results.find { video ->
+            video.site.equals("YouTube", ignoreCase = true) &&
+                    video.type.equals("Trailer", ignoreCase = true)
+        }
+
+        binding.btnWatchTrailer.isVisible = trailer != null
     }
 
     @SuppressLint("SetTextI18n")
@@ -154,6 +178,30 @@ class DetailFragment : Fragment() {
     private fun initAction() {
         binding.toolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
+        }
+
+        binding.btnWatchTrailer.setOnClickListener {
+            openTrailer()
+        }
+    }
+
+    private fun openTrailer() {
+        currentMovieVideos?.let { videos ->
+            val trailer = videos.results.find { video ->
+                video.site.equals("YouTube", ignoreCase = true) &&
+                        video.type.equals("Trailer", ignoreCase = true)
+            }
+
+            trailer?.let { video ->
+                val youtubeUrl = "https://www.youtube.com/watch?v=${video.key}"
+                val intent = Intent(Intent.ACTION_VIEW, youtubeUrl.toUri())
+
+                try {
+                    startActivity(intent)
+                } catch (_: Exception) {
+                    Snackbar.make(binding.root, "Unable to open trailer", Snackbar.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
