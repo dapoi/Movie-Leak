@@ -4,11 +4,14 @@ import com.dapascript.movieleak.data.api.ApiService
 import com.dapascript.movieleak.data.mapper.toMovieCredits
 import com.dapascript.movieleak.data.mapper.toMovieDetail
 import com.dapascript.movieleak.data.mapper.toMovieList
+import com.dapascript.movieleak.data.mapper.toMovieVideos
 import com.dapascript.movieleak.data.model.CastItem
 import com.dapascript.movieleak.data.model.MovieCreditsResponse
 import com.dapascript.movieleak.data.model.MovieDetailResponse
 import com.dapascript.movieleak.data.model.MovieResponse
+import com.dapascript.movieleak.data.model.MovieVideosResponse
 import com.dapascript.movieleak.data.model.ResultsItem
+import com.dapascript.movieleak.data.model.VideoResponse
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -212,6 +215,47 @@ class MovieRepositoryImplTest {
 
         // When
         val result = movieRepository.getMovieCredits(movieId).first()
+
+        // Then
+        assertTrue(result.isFailure)
+        assertEquals(exception, result.exceptionOrNull())
+    }
+
+    @Test
+    fun `getMovieVideos should return success`() = runTest {
+        // Given
+        val movieId = 1
+        val dummyVideoResponse = VideoResponse(
+            id = "video1",
+            key = "dQw4w9WgXcQ",
+            name = "Official Trailer",
+            site = "YouTube",
+            type = "Trailer",
+            official = true
+        )
+        val dummyResponse = MovieVideosResponse(
+            id = movieId,
+            results = listOf(dummyVideoResponse)
+        )
+        whenever(apiService.getMovieVideos(movieId)).thenReturn(dummyResponse)
+
+        // When
+        val result = movieRepository.getMovieVideos(movieId).first()
+
+        // Then
+        assertTrue(result.isSuccess)
+        assertEquals(dummyResponse.toMovieVideos(), result.getOrNull())
+    }
+
+    @Test
+    fun `getMovieVideos should return failure when api throws exception`() = runTest {
+        // Given
+        val movieId = 1
+        val exception = RuntimeException("Network error")
+        whenever(apiService.getMovieVideos(movieId)).thenThrow(exception)
+
+        // When
+        val result = movieRepository.getMovieVideos(movieId).first()
 
         // Then
         assertTrue(result.isFailure)

@@ -4,8 +4,11 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.dapascript.movieleak.domain.model.Cast
 import com.dapascript.movieleak.domain.model.MovieCredits
 import com.dapascript.movieleak.domain.model.MovieDetail
+import com.dapascript.movieleak.domain.model.MovieVideos
+import com.dapascript.movieleak.domain.model.Video
 import com.dapascript.movieleak.domain.usecase.GetMovieCreditsUseCase
 import com.dapascript.movieleak.domain.usecase.GetMovieDetailUseCase
+import com.dapascript.movieleak.domain.usecase.GetMovieVideosUseCase
 import com.dapascript.movieleak.presentation.utils.UiState
 import com.dapascript.movieleak.utils.MainCoroutineRule
 import com.dapascript.movieleak.utils.getOrAwaitValue
@@ -40,11 +43,14 @@ class DetailViewModelTest {
     @Mock
     private lateinit var getMovieCreditsUseCase: GetMovieCreditsUseCase
 
+    @Mock
+    private lateinit var getMovieVideosUseCase: GetMovieVideosUseCase
+
     private lateinit var detailViewModel: DetailViewModel
 
     @Before
     fun setUp() {
-        detailViewModel = DetailViewModel(getMovieDetailUseCase, getMovieCreditsUseCase)
+        detailViewModel = DetailViewModel(getMovieDetailUseCase, getMovieCreditsUseCase, getMovieVideosUseCase)
     }
 
     @Test
@@ -109,5 +115,86 @@ class DetailViewModelTest {
         assertNotNull(result)
         assertEquals(UiState.Error(errorMessage), result)
         verify(getMovieCreditsUseCase).invoke(movieId)
+    }
+
+    @Test
+    fun `getMovieVideos should return success`() = runTest {
+        // Given
+        val movieId = 1
+        val dummyVideo = Video(
+            id = "video1",
+            key = "dQw4w9WgXcQ",
+            name = "Official Trailer",
+            site = "YouTube",
+            type = "Trailer",
+            official = true
+        )
+        val dummyMovieVideos = MovieVideos(
+            id = movieId,
+            results = listOf(dummyVideo)
+        )
+        whenever(getMovieVideosUseCase(movieId)).thenReturn(flowOf(Result.success(dummyMovieVideos)))
+
+        // When
+        detailViewModel.getMovieVideos(movieId)
+
+        // Then
+        verify(getMovieVideosUseCase).invoke(movieId)
+        val videosState = detailViewModel.videosState.value
+        assertEquals(UiState.Success(dummyMovieVideos), videosState)
+    }
+
+    @Test
+    fun `getMovieVideos should return error when use case fails`() = runTest {
+        // Given
+        val movieId = 1
+        val errorMessage = "Network error"
+        val exception = RuntimeException(errorMessage)
+        whenever(getMovieVideosUseCase(movieId)).thenReturn(flowOf(Result.failure(exception)))
+
+        // When
+        detailViewModel.getMovieVideos(movieId)
+
+        // Then
+        verify(getMovieVideosUseCase).invoke(movieId)
+        val videosState = detailViewModel.videosState.value
+        assertEquals(UiState.Error(errorMessage), videosState)
+    }
+
+    @Test
+    fun `getMovieVideos should handle empty videos list`() = runTest {
+        // Given
+        val movieId = 1
+        val emptyMovieVideos = MovieVideos(
+            id = movieId,
+            results = emptyList()
+        )
+        whenever(getMovieVideosUseCase(movieId)).thenReturn(flowOf(Result.success(emptyMovieVideos)))
+
+        // When
+        detailViewModel.getMovieVideos(movieId)
+
+        // Then
+        verify(getMovieVideosUseCase).invoke(movieId)
+        val videosState = detailViewModel.videosState.value
+        assertEquals(UiState.Success(emptyMovieVideos), videosState)
+    }
+
+    @Test
+    fun `getMovieVideos should handle flow exception`() = runTest {
+        // Given
+        val movieId = 1
+        val errorMessage = "Flow exception"
+        whenever(getMovieVideosUseCase(movieId)).thenReturn(flow {
+            throw RuntimeException(errorMessage)
+        })
+
+        // When
+        detailViewModel.getMovieVideos(movieId)
+
+        // Then
+        verify(getMovieVideosUseCase).invoke(movieId)
+        val videosState = detailViewModel.videosState.value
+        assertEquals(UiState.Error(errorMessage), videosState)
     }
 }
